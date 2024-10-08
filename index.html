@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Asthma Patient Helper Real-Time App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+    <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" type="text/css" href="css/util.css">
+    <link rel="stylesheet" type="text/css" href="css/home.css">
+    <style>
+        /* Additional Styles */
+        .dark-mode {
+            background: #121212;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .wrap-login100 {
+            background: #1e1e1e;
+        }
+
+        .dark-mode .overview-item {
+            background: #2c2c2c;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .parameter,
+        .dark-mode .value,
+        .dark-mode .status,
+        .dark-mode .mode-item,
+        .dark-mode .mode-title {
+            color: #e0e0e0;
+        }
+
+        .dark-mode .slider {
+            background-color: #555;
+        }
+
+        .dark-mode .slider:before {
+            background-color: #333;
+        }
+
+        .analysis-button {
+            background: linear-gradient(90deg, #21d4fd, #b721ff);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-family: Poppins-Bold;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .analysis-button:hover {
+            background: linear-gradient(90deg, #b721ff, #21d4fd);
+            transform: scale(1.05);
+        }
+
+        .analysis-button:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <div class="login100-form-title">
+                    Asthma Patient Helper System
+                </div>
+                <div class="overview" id="overview">
+                    <div class="overview-item">
+                        <span class="parameter">Heart Rate:</span>
+                        <span class="value" id="heart-rate">Loading...</span>
+                        <span class="status" id="heart-rate-status">Good</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="parameter">Oxygen Concentration:</span>
+                        <span class="value" id="oxygen-concentration">Loading...</span>
+                        <span class="status" id="oxygen-status">Good</span>
+                    </div>                    
+                    <div class="overview-item">
+                        <span class="parameter">Dust Level :</span>
+                        <span class="value" id="dust-level">Loading...</span>
+                        <span class="status" id="dust-status">Good</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="parameter">Temperature:</span>
+                        <span class="value" id="temperature">Loading...</span>
+                        <span class="status" id="temp-status">Moderate</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="parameter">Smoke Density:</span>
+                        <span class="value" id="smoke-density">Loading...</span>
+                        <span class="status" id="smoke-status">Good</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="parameter">Humidity:</span>
+                        <span class="value" id="humidity">Loading...</span>
+                        <span class="status" id="humidity-status">Moderate</span>
+                    </div>
+                </div>
+                <div class="modes">
+                    <div class="mode-item">
+                        <span class="mode-title">Dark-mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                   
+                     
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dropDownSelect1"></div>
+
+    <script type="module">
+        // Firebase Configuration
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoYPlop6-5jKBxMPAuJuVTCvVwJDs1Wkw",
+            authDomain: "fir-sensor-data-b9a8f.firebaseapp.com",
+            databaseURL: "https://fir-sensor-data-b9a8f-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "fir-sensor-data-b9a8f",
+            storageBucket: "fir-sensor-data-b9a8f.appspot.com",
+            messagingSenderId: "78669352692",
+            appId: "1:78669352692:web:c00d9dc6adfb7634ab18a1"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+    
+        // References to the sensor data
+        const dustLevelRef = ref(database, 'UsersData/d3ko6coPaebS7cZCIHEBTNJyEXR2/readings/pm1_0');
+        const tempRef = ref(database, 'UsersData/d3ko6coPaebS7cZCIHEBTNJyEXR2/readings/temperature');
+        const smokeRef = ref(database, 'UsersData/d3ko6coPaebS7cZCIHEBTNJyEXR2/readings/ppmSmoke');
+        const humidityRef = ref(database, 'UsersData/d3ko6coPaebS7cZCIHEBTNJyEXR2/readings/humidity');
+        const heartRateRef = ref(database, 'UsersData/d3ko6coPaebS7cZCIHEBTNJyEXR2/readings/heartRate');
+        const oxygenRef = ref(database, 'UsersData/d3ko6coPaebS7cZCIHEBTNJyEXR2/readings/oxygenLevel');
+    
+        // Function to display data and status
+        const displayData = (elementId, value, statusElementId, status) => {
+            const element = document.getElementById(elementId);
+            const statusElement = document.getElementById(statusElementId);
+            if (element && statusElement) {
+                element.innerText = value;
+                statusElement.innerText = status;
+            }
+        };
+    
+        // Threshold Logic Based on the provided table
+        const determineStatus = (parameter, value) => {
+            switch (parameter) {
+                case 'temperature':
+                    if (value >= 20 && value <= 33) return "Good";
+                    if (value >15 && value <=20) return "Moderate";
+                    if (value < 20 || value > 32) return "Bad";
+                    break;
+                case 'humidity':
+                    if (value >= 25 && value <= 47) return "Good";
+                    if (value >10 && value <25) return "Moderate"
+                    if (value <= 10 || value > 47) return "Bad";
+                    break;
+                case 'ppmSmoke':
+                    if (value >= 0 && value <= 4) return "Good";
+                    if (value >4 && value <=7) return "Moderate";
+                    if (value > 4) return "Bad";
+                    break;
+                case 'heartRate':
+                    if (value >= 60 && value <= 100) return "Good";
+                    if(value>40 && value <60) return "Moderate";
+                    if (value < 40 || value > 100) return "Bad";
+                    break;
+                case 'oxygenLevel':
+                    if (value >= 95 && value <= 100) return "Good";
+                    if (value < 95 && value>=90) return "Moderate";
+                    if (value <90) return "Bad";
+                    break;
+                default:
+                    return "Moderate";
+            }
+        };
+    
+        // Reading data from Firebase and updating the UI
+        onValue(dustLevelRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const value = snapshot.val();
+                const status = determineStatus('ppmSmoke', value); // Assuming 'dust level' is 'ppmSmoke' in your system
+                displayData('dust-level', value + " µg/m³", 'dust-status', status);
+            } else {
+                displayData('dust-level', "No data available", 'dust-status', "No data");
+            }
+        });
+    
+        onValue(tempRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const value = snapshot.val();
+                const status = determineStatus('temperature', value);
+                displayData('temperature', value + "°C", 'temp-status', status);
+            } else {
+                displayData('temperature', "No data available", 'temp-status', "No data");
+            }
+        });
+    
+        onValue(smokeRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const value = snapshot.val();
+                const status = determineStatus('ppmSmoke', value);
+                displayData('smoke-density', value + " ppm", 'smoke-status', status);
+            } else {
+                displayData('smoke-density', "No data available", 'smoke-status', "No data");
+            }
+        });
+    
+        onValue(humidityRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const value = snapshot.val();
+                const status = determineStatus('humidity', value);
+                displayData('humidity', value + "%", 'humidity-status', status);
+            } else {
+                displayData('humidity', "No data available", 'humidity-status', "No data");
+            }
+        });
+    
+        onValue(heartRateRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const value = snapshot.val();
+                const status = determineStatus('heartRate', value);
+                displayData('heart-rate', value + " bpm", 'heart-rate-status', status);
+            } else {
+                displayData('heart-rate', "No data available", 'heart-rate-status', "No data");
+            }
+        });
+    
+        onValue(oxygenRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const value = snapshot.val();
+                const status = determineStatus('oxygenLevel', value);
+                displayData('oxygen-concentration', value + " %", 'oxygen-status', status);
+            } else {
+                displayData('oxygen-concentration', "No data available", 'oxygen-status', "No data");
+            }
+        });
+     
+
+
+        // Dark Mode Toggle Script
+        document.addEventListener('DOMContentLoaded', function () {
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const body = document.body;
+    
+            // Check if dark mode is saved in local storage
+            if (localStorage.getItem('dark-mode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+    
+            darkModeToggle.addEventListener('change', function () {
+                if (darkModeToggle.checked) {
+                    body.classList.add('dark-mode');
+                    localStorage.setItem('dark-mode', 'enabled');
+                } else {
+                    body.classList.remove('dark-mode');
+                    localStorage.setItem('dark-mode', 'disabled');
+                }
+            });
+        });
+    </script>
+    
+
+    <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="vendor/animsition/js/animsition.min.js"></script>
+    <script src="vendor/bootstrap/js/popper.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="vendor/select2/select2.min.js"></script>
+    <script src="vendor/daterangepicker/moment.min.js"></script>
+    <script src="vendor/daterangepicker/daterangepicker.js"></script>
+    <script src="vendor/countdowntime/countdowntime.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
